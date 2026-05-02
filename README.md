@@ -1,83 +1,109 @@
 # PromptForge
 
-reverse-engineering toolkit for AI system prompts. rips apart jailbreak techniques, extracts exploit patterns, and forges hardened persona payloads tuned per-target.
+Native Windows prompt-engineering workspace for analyzing AI system prompts, extracting reusable prompt patterns, and generating polished per-target persona prompts.
 
-built this because every public jailbreak gets patched in a week and writing new ones by hand is tedious as fuck. so i automated it.
-
----
-
-## what it does
-
-- **prompt analysis engine** — feed it known working jailbreaks/system prompts, it tears them apart and extracts the techniques that actually work (roleplay framing, authority escalation, context poisoning, etc)
-- **tactic database** — every technique it finds gets saved to a persistent DB. even if you close it, rebuild, whatever — it remembers everything it learned
-- **per-target generation** — generates custom persona prompts tailored to specific AI platforms (ChatGPT, Claude, Gemini, Cursor, Windsurf, etc). each one has different guardrails so each prompt is built differently
-- **3-pass refinement pipeline** — builds a base persona → enriches with detail → final polish pass. each iteration makes it more convincing
-- **deep detail mode** — flips the final pass to a bigger, meaner model for maximum output quality. uses all learned tactics + knowledge dump
-- **prompt memory bank** — every prompt it generates gets saved. browse old ones, copy them, load them back. never lose a good prompt again
-- **cloud inference** — runs on OpenRouter so you dont need a beefy GPU. just grab an API key and go
-
-## setup
-
-1. grab a release from [releases](../../releases) or build from source (see below)
-2. run `PromptForge.exe`
-3. first launch asks for your OpenRouter API key — click the link in the app to grab one from [openrouter.ai/keys](https://openrouter.ai/keys)
-4. enter key, hit confirm. done. key is saved so you only do this once
-
-## how to use it
-
-1. **pick a target AI** — click the logo of whatever AI you want to craft a prompt for
-2. **feed it training data** — click "Add Prompt" and load `.txt` files containing known jailbreaks/system prompts. the more you feed it the better the output. theres also a `prompts/` folder with some starters
-3. **let it analyze** — it chews through each prompt and extracts tactics. watch the progress bar
-4. **generate** — once you have enough tactics (bar turns green), hit Generate. it runs 3 passes and spits out a full persona prompt
-5. **deep detail mode** — toggle it on before generating if you want the big model to handle the final pass. slower but way more detailed output
-6. **copy & use** — copy the generated prompt, paste it as a system prompt / custom instructions in your target AI
-7. **memories** — click "Memories" to browse all previously generated prompts. click any to view, copy, or reload it
-
-## building from source
-
-requirements:
-- CMake 3.20+
-- Visual Studio 2022 (MSVC)
-- internet connection (fetches deps automatically via CMake FetchContent)
-
-binary lands in `build/Release/PromptForge.exe`
-
-## data storage
-
-everything persists to `%APPDATA%/PromptForge/`:
-- `config.json` — API key + settings
-- `tactics_db.json` — all extracted techniques
-- `prompt_history.json` — every generated prompt
-
-delete that folder to factory reset.
-
-## models used
-
-runs through [OpenRouter](https://openrouter.ai) — no local GPU needed:
-- **standard mode**: `dolphin-mixtral-8x22b` — fast, uncensored, solid output
-- **deep detail mode**: `hermes-3-llama-3.1-405b` — 405B params, maximum detail
-
-costs a few cents per generation depending on output length.
-
-## supported targets
-
-| AI | Status |
-|---|---|
-| ChatGPT / GPT-5 | ✅ |
-| Claude | ✅ |
-| Gemini | ✅ |
-| Cursor | ✅ |
-| Windsurf | ✅ |
-| Antigravity | ✅ |
-
-each target loads its actual system prompt/TOS so the generated persona is specifically crafted to work against that platform's guardrails.
-
-## screenshots
-
-*coming soon — app has a dark themed UI with custom rendering, no stock imgui look*
+Built in C++ with Dear ImGui, DirectX 11, libcurl, and nlohmann/json. No Electron, no browser wrapper, no web runtime — just a native desktop app.
 
 ---
 
-built with C++, ImGui, libcurl, nlohmann/json. no electron, no web shit, just a native exe.
+## What It Does
 
-if it helped you out drop a star. PRs welcome if you have new target AI prompts or tactics to add.
+- **Prompt analysis engine**  
+  Load `.txt` prompt files and let PromptForge analyze them for reusable structure, framing patterns, role definitions, instruction styles, and other prompt-design tactics.
+
+- **Persistent tactic database**  
+  Extracted tactics are saved locally and reused across sessions. Close the app, rebuild it, or restart your PC — the learned tactic database stays intact.
+
+- **Per-target workspace**  
+  Select a target AI platform such as ChatGPT, Claude, Gemini, Cursor, Windsurf, or Antigravity. Each workspace loads the relevant embedded system prompt/TOS context for that target.
+
+- **3-pass generation pipeline**  
+  PromptForge generates in multiple passes:
+  1. Base persona draft
+  2. Enriched detail pass
+  3. Final polish pass
+
+- **Deep Detail Mode**  
+  Optional mode that routes the final generation pass through the configured cloud model for longer, more detailed output.
+
+- **Prompt memory bank**  
+  Generated prompts are automatically saved. You can browse old generations, copy them, or reload them back into the current workspace.
+
+- **Ollama Cloud inference**  
+  Uses Ollama Cloud directly through `https://ollama.com/api`, so you do not need a local GPU or local model install.
+
+- **Modern native UI**  
+  Custom Dear ImGui rendering with animated screens, embedded target logos, workspace particles/embers, glowing headers, staggered panel animations, redesigned training prompt cards, status pills, animated progress bars, memories overlay, and workspace footer stats.
+
+---
+
+## Setup
+
+1. Download a release from [Releases](../../releases), or build from source.
+2. Run `AI_Prompt_Forge.exe`.
+3. On first launch, enter your Ollama Cloud API key.
+4. If you need a key, click **Get API Key** in the app or visit: [https://ollama.com/settings/keys](https://ollama.com/settings/keys)
+5. Hit **Confirm**. Your key is saved locally.
+
+You can also provide the key through the environment variable:
+
+```powershell
+$env:OLLAMA_API_KEY="your_key_here"
+PromptForge accepts pasted keys in plain form, Bearer ... form, or Authorization: Bearer ... form.
+
+How To Use
+Pick a target AI
+Click a target logo on the main screen.
+Load training prompts
+Use Add Prompt to select .txt files, or Fetch Local to scan local prompt files bundled near the executable.
+Let analysis run
+PromptForge processes each file and updates the training feed. If cloud analysis is unavailable, prompts are still added to the list instead of breaking the workflow.
+Review extracted tactics
+Extracted patterns appear in the right-side workspace panel.
+Generate
+Once the progress bar is ready, click Generate Prompt.
+Use Deep Detail Mode if needed
+Toggle Deep Detail before generating for a more detailed final pass.
+Copy or save output
+Generated prompts appear in the output panel and are automatically saved to Memories.
+Browse Memories
+Click Memories to view previous generations, copy them, or load them back into the workspace.
+Models Used
+PromptForge currently uses Ollama Cloud.
+
+Default model:
+
+text
+gpt-oss:120b-cloud
+Deep Detail Mode also defaults to:
+
+text
+gpt-oss:120b-cloud
+The client talks directly to:
+
+text
+https://ollama.com/api/generate
+with Bearer authentication.
+
+Supported Targets
+Target	Status
+ChatGPT	Supported
+Claude	Supported
+Gemini	Supported
+Cursor	Supported
+Windsurf	Supported
+Antigravity	Supported
+Each target includes embedded prompt/context data and an embedded logo used by the native UI.
+
+Building From Source
+Requirements
+Windows
+Visual Studio 2022 with MSVC
+CMake 3.20+
+Internet connection for CMake FetchContent
+Dependencies
+Fetched automatically by CMake:
+
+Dear ImGui
+libcurl
+nlohmann/json
